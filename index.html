@@ -81,36 +81,54 @@ input[type=text],select{border:1px solid var(--line-strong);border-radius:7px;pa
 .muted{color:var(--muted);font-size:12px;}
 .save-bar{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 
-/* ====== 购买台账 (手机横滑优化版) ====== */
-/* 设置容器可以左右滑动 */
+/* ====== 购买台账 (手机横滑修复版) ====== */
 .ledger-scroll-container {
     overflow-x: auto;
     display: flex;
     gap: 12px;
     padding-bottom: 10px;
     -webkit-overflow-scrolling: touch;
+    align-items: flex-start;
 }
-/* 每个卡片固定最小宽度，不压缩，迫使容器可以滑动 */
+/* 固定宽度，保证表格能撑开且不折行 */
 .ledger-card{
-    min-width: 280px;
+    width: 85vw; /* 屏幕宽度的85% */
+    max-width: 320px;
     flex: 0 0 auto;
     border:1px solid var(--line);
     border-radius:10px;
     padding:10px;
     background:#fff;
 }
-.ledger-head{background:#ffd966;text-align:center;font-weight:bold;padding:6px;border-radius:6px;margin-bottom:10px;font-size:14px;}
+.ledger-head{background:#ffd966;text-align:center;font-weight:bold;padding:6px;border-radius:6px;margin-bottom:10px;font-size:14px;color:#333;}
 .ledger-meta{font-size:12px;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
 .ledger-meta input{border:none;border-bottom:1px solid var(--line-strong);width:50px;text-align:center;background:transparent;padding:2px;font-size:12px;}
 
-.ledger-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
-.ledger-table th,.ledger-table td{border:1px solid var(--line);padding:4px 2px;text-align:center;height:28px;}
-.ledger-table input{border:none;background:transparent;width:100%;min-width:0;text-align:center;padding:0;font-size:12px;}
+.ledger-table{width:100%;border-collapse:collapse;font-size:12px;}
+.ledger-table th{
+    background: #f7f8f6; 
+    font-weight: normal; 
+    color: #666; 
+    padding: 6px 2px;
+    border: 1px solid var(--line);
+}
+.ledger-table td{border:1px solid var(--line);padding:2px 1px;text-align:center;}
+/* 强制输入框高度，避免手机端变扁消失 */
+.ledger-table input{
+    border:none;
+    background:transparent;
+    width:100%;
+    height: 28px; 
+    text-align:center;
+    padding:0;
+    font-size:13px;
+    color: inherit;
+}
 .ledger-table input:focus{outline:1px solid var(--accent);background:#fff;}
 
 .countdown-warning { color: var(--danger-text) !important; font-weight: bold; background-color: var(--danger-bg) !important; }
-.sum-row { background: #f0f2ee; font-weight: bold; font-size: 12px; }
-.sum-row td { padding: 6px 2px !important; }
+.sum-row { background: #f0f2ee; font-weight: bold; font-size: 13px; }
+.sum-row td { padding: 8px 2px !important; }
 
 .history-block {
     background-color: #f4f5f4;
@@ -216,8 +234,7 @@ return m;
 }
 
 /* ==================== 工具 ==================== */
-// ⚠️ 注意：这里更换了全新的版本号，绝对不再读取旧缓存！
-const STORE_KEY='checkin-tracker-mobile-weekend-v1'; 
+const STORE_KEY='checkin-tracker-mobile-v2'; 
 function uid(){return Math.random().toString(36).slice(2,9);}
 function deep(o){return JSON.parse(JSON.stringify(o));}
 function todayStr(){const d=new Date();const p=n=>String(n).padStart(2,'0');
@@ -254,7 +271,6 @@ const initialLedgers = getDefaultLedgers();
 return {master, days:{}, ledgers: initialLedgers};
 }
 
-// 纯净框架，无历史数据
 function getDefaultLedgers() {
     return {
         '本5': [{ roundId: Date.now(), startDate: '', rows: [] }],
@@ -349,7 +365,7 @@ save();renderToday();
 });
 }
 
-/* ==================== 渲染：账号购买台账 (手机横向滑动) ==================== */
+/* ==================== 渲染：账号购买台账 ==================== */
 function renderLedger() {
     let html = `<div class="card">
     <div class="meta-row">
@@ -359,7 +375,7 @@ function renderLedger() {
         <button class="btn nav-to-sub" data-target="master">打开母版</button>
         <button class="btn nav-to-sub" data-target="compare">历史打卡</button>
     </div>
-    <div style="font-size:12px; color:var(--muted); margin-bottom:12px;">👉 提示：左右滑动可查看全部账号。双击行可高亮。</div>
+    <div style="font-size:12px; color:var(--muted); margin-bottom:12px;">👉 提示：左右滑动查看其余账号。双击行切换高亮。</div>
     <div class="ledger-scroll-container">`;
 
     const ledgerCols = state.master.columns
@@ -435,7 +451,8 @@ function renderLedger() {
                 <tbody>`;
 
             const rows = round.rows;
-            const totalRows = Math.max(20, rows.length);
+            // ⚠️ 这里改为至少 4 行，满足手机预览的轻量需求
+            const totalRows = Math.max(4, rows.length);
             let sumActual = 0;
 
             for(let i=0; i<totalRows; i++) {
@@ -581,7 +598,7 @@ const keys=Object.keys(state.days).sort().reverse();
 const recent=keys.slice(0,3); 
 if(recent.length===0){document.getElementById('main').innerHTML=html+'<div class="note">暂无历史记录。</div></div>';return;}
 
-html+=`<div class="note">仅保留最近 3 份记录，左右并排对比。</div>`;
+html+=`<div class="note">仅保留最近 3 份记录。</div>`;
 if(recent.length < 3) html+=`<div class="note" style="background:#f6f7f5;color:var(--muted)">目前只有 ${recent.length} 份记录。</div>`;
 html+=`<div class="compare-wrap">`;
 recent.forEach(k=>{
