@@ -191,7 +191,6 @@ groups:[
 ]},
 {id:uid(), name:'JD', rows:[
 {id:uid(), label:'', header:true, targets:{}, cells:{}},
-{id:uid(), label:'打卡',   targets:{}, cells:{}},
 {id:uid(), label:'水',     targets:{}, cells:{}},
 {id:uid(), label:'视频卡', targets:{}, cells:{}},
 {id:uid(), label:'家居馆', targets:{}, cells:{}},
@@ -215,15 +214,13 @@ return grp.rows.find(r=>r.label===label);
 const setCells=(r,arr)=>{arr.forEach(k=>{r.cells[C[k].id]=1;});};
 const setTarget=(r,k,v)=>{r.targets[C[k].id]=v;};
 
-setCells(row('TB','猫超'),     ['b','c','d','e']);
+setCells(row('TB','成就'),     ['d','e','f']);   
 setCells(row('TB','签到'),     ['c','d','e','f']);
 setCells(row('TB','签到元宝'), ['b','c','d','e','f']);
-setCells(row('TB','成就'),     ['d','e','f']);
-setTarget(row('TB','芭芭超值'),'d','20'); setTarget(row('TB','芭芭超值'),'e','20');
+setCells(row('TB','猫超'),     ['b','c','d','e']);
 
 const jdHead = row('JD','');
 setTarget(jdHead,'d','101'); setTarget(jdHead,'f','9');
-setCells(row('JD','打卡'),   ['b','c','d','f']);
 setCells(row('JD','水'),     ['b','c','d','f']);
 setCells(row('JD','视频卡'), ['b','c','d','f']);
 setCells(row('JD','家居馆'), ['b','c','d','f']);
